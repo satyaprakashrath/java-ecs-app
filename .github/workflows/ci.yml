@@ -61,5 +61,5 @@ jobs:
         working-directory: infra  # <-- adjust if your .tf files are elsewhere
 
       - name: Apply Terraform
-        run: terraform apply -auto-approve
+        run: terraform apply -auto-approve -var="db_password=${{ secrets.DB_PASSWORD }}"
         working-directory: infra
