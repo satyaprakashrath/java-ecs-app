@@ -1,0 +1,22 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://db:5432/demo
+    username: postgres
+    password: password
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      dialect:
+        org.hibernate.dialect.PostgreSQLDialect
+  server:
+    port: ${SERVER_PORT:8080}
+  logging:
+    level:
+      root: DEBUG
+      com.satya.apps: DEBUG
+    file:
+      name: logs/app.log
+    pattern:
+      console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"

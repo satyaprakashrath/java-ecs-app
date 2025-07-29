@@ -1,0 +1,11 @@
+# IntelliJ and build folders
+.idea/
+target/
+
+# Terraform cache and state
+infra/.terraform/
+*.tfstate
+*.tfstate.backup
+
+# OS and misc
+.DS_Store
