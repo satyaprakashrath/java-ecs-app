@@ -73,11 +73,11 @@ resource "aws_route_table_association" "public" {
   route_table_id = aws_route_table.public_route_table.id
 }
 
-terraform {
+/*terraform {
   backend "s3" {
     bucket         = "satyarath"
     key            = "java-ecs-app/terraform.tfstate"
     region         = "us-west-2"
     dynamodb_table = "terraform-locks" # Optional, for state locking
   }
-}
+}*/
