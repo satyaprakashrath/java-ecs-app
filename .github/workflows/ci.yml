@@ -1,58 +1,65 @@
 name: Java CI/CD with Terraform and ECR
 
 on:
-        push:
-                branches: [ "main" ]
-        pull_request:
-                branches: [ "main" ]
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
 
 permissions:
-        id-token: write     # Required for OIDC
-        contents: read      # Needed to checkout code
+  id-token: write     # Required for OIDC
+  contents: read      # Needed to checkout code
 
 env:
-        AWS_REGION: us-west-2
-        ECR_REPOSITORY: java-ecs-app
-        IMAGE_TAG: latest
+  AWS_REGION: us-west-2
+  ECR_REPOSITORY: java-ecs-app
+  IMAGE_TAG: latest
 
 jobs:
-        build-deploy:
-                runs-on: ubuntu-latest
+  build-deploy:
+    runs-on: ubuntu-latest
 
-                steps:
-                        - name: Checkout code
-                          uses: actions/checkout@v4
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-                        - name: Set up JDK
-                          uses: actions/setup-java@v3
-                          with:
-                                  java-version: '17'
-                                  distribution: 'temurin'
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
 
-                        - name: Build with Maven
-                          run: mvn clean install
+      - name: Build with Maven
+        run: mvn clean install
 
-                        - name: Configure AWS credentials using OIDC
-                          uses: aws-actions/configure-aws-credentials@v2
-                          with:
-                                  role-to-assume: arn:aws:iam::840741414500:role/gihub-deploy-role
-                                  aws-region: ${{ env.AWS_REGION }}
+      - name: Configure AWS credentials using OIDC
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: arn:aws:iam::840741414500:role/gihub-deploy-role
+          aws-region: ${{ env.AWS_REGION }}
 
-                        - name: Login to Amazon ECR
-                          id: login-ecr
-                          uses: aws-actions/amazon-ecr-login@v2
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
 
-                        - name: Build Docker image
-                          run: |
-                                  docker build -t $ECR_REPOSITORY:$IMAGE_TAG .
-                                  docker tag $ECR_REPOSITORY:$IMAGE_TAG ${{ steps.login-ecr.outputs.registry }}/$ECR_REPOSITORY:$IMAGE_TAG
+      - name: Build Docker image
+        run: |
+          docker build -t $ECR_REPOSITORY:$IMAGE_TAG .
+          docker tag $ECR_REPOSITORY:$IMAGE_TAG ${{ steps.login-ecr.outputs.registry }}/$ECR_REPOSITORY:$IMAGE_TAG
 
-                        - name: Push Docker image to ECR
-                          run: |
-                                  docker push ${{ steps.login-ecr.outputs.registry }}/$ECR_REPOSITORY:$IMAGE_TAG
+      - name: Push Docker image to ECR
+        run: |
+          docker push ${{ steps.login-ecr.outputs.registry }}/$ECR_REPOSITORY:$IMAGE_TAG
 
-                        - name: Initialize Terraform
-                          run: terraform init
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.6.6  # Adjust version as needed
 
-                        - name: Apply Terraform
-                          run: terraform apply -auto-approve
+      - name: Initialize Terraform
+        run: terraform init
+        working-directory: infra  # <-- adjust if your .tf files are elsewhere
+
+      - name: Apply Terraform
+        run: terraform apply -auto-approve
+        working-directory: infra
